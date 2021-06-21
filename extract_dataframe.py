@@ -44,7 +44,15 @@ class TweetDfExtractor:
         return list(statuses_count)
 
     def find_full_text(self) -> list:
-        text=[x['retweeted_status']['text'] if 'retweeted_status' in x else x['text'] for x in self.tweets_list]
+        text=[]
+        for x in self.tweets_list:
+            if 'retweeted_status' in x:
+                if 'extended_tweet' in x['retweeted_status']:
+                    text.append(x['retweeted_status']['extended_tweet']['full_text'])
+                else:
+                    text.append(x['retweeted_status']['text'])
+            else:
+                text.append(x['text'])
         return text
 
     def find_sentiments(self, text) -> list:
@@ -79,7 +87,7 @@ class TweetDfExtractor:
         return friends_count
 
     def is_sensitive(self) -> list:
-        is_sensitive = [x['possibly_sensitive'] if 'possibly_sensitive' in x else None  for x in self.tweets_list]
+        is_sensitive = [x['possibly_sensitive'] if 'possibly_sensitive' in x else 'None'  for x in self.tweets_list]
         return is_sensitive
 
     def find_favourite_count(self) -> list:
@@ -90,13 +98,22 @@ class TweetDfExtractor:
         return retweet_count
 
     def find_hashtags(self) -> list:
-        hashtags = [x['entities']['hashtags'] for x in self.tweets_list]
+        hashtags=[]
+        for x in self.tweets_list:
+            if len(x['entities']['hashtags'])>0:
+                hashtags.append('\n'.join([i['text'] for i in x['entities']['hashtags']]))
+            else:
+                hashtags.append('')
         return hashtags
 
     def find_mentions(self) -> list:
-        mentions = [x['entities']['user_mentions'] for x in self.tweets_list]
-        return mentions
-
+        mensions=[]
+        for x in self.tweets_list:
+            if len(x['entities']['user_mentions'])>0:
+                mensions.append('\n'.join([i['screen_name'] for  i in x['entities']['user_mentions'] ]))
+            else:
+                mensions.append('')
+        return mensions
     def find_location(self) -> list:
         location = [x['user']['location'] if 'user' in x and 'location' in x['user']  else '' for x in self.tweets_list]
         return location
@@ -144,8 +161,8 @@ if __name__ == "__main__":
                'original_author', 'screen_count', 'followers_count', 'friends_count', 'possibly_sensitive', 'hashtags',
                'user_mentions', 'place', 'place_coord_boundaries']
     _, tweet_list = read_json("data/covid19.json")
-    print(tweet_list[0]['retweeted_status'].keys())
+    print(tweet_list[4])
     tweet = TweetDfExtractor(tweet_list)
     tweet_df = tweet.get_tweet_df()
-
+    tweet_df.to_csv('output.csv')
     # use all defined functions to generate a dataframe with the specified columns above
