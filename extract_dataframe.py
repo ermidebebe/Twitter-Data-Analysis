@@ -161,8 +161,6 @@ if __name__ == "__main__":
                'original_author', 'screen_count', 'followers_count', 'friends_count', 'possibly_sensitive', 'hashtags',
                'user_mentions', 'place', 'place_coord_boundaries']
     _, tweet_list = read_json("data/covid19.json")
-    print(tweet_list[4])
     tweet = TweetDfExtractor(tweet_list)
     tweet_df = tweet.get_tweet_df()
-    tweet_df.to_csv('output.csv')
     # use all defined functions to generate a dataframe with the specified columns above
